@@ -48,7 +48,11 @@ export default function PlatsPage() {
     fd.append('file', file)
     const res = await fetch('/api/dashboard/upload', { method: 'POST', body: fd })
     const data = await res.json()
-    if (data.url) setForm((f) => ({ ...f, image_url: data.url }))
+    if (!res.ok || !data.url) {
+      alert(data.error ?? "Échec de l'envoi de l'image")
+    } else {
+      setForm((f) => ({ ...f, image_url: data.url }))
+    }
     setUploading(false)
   }
 

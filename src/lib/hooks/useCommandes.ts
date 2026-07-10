@@ -15,11 +15,12 @@ export interface CommandeAvecLignes {
   lignes_commande: { plat_nom: string; quantite: number; prix_unitaire: number }[]
 }
 
-// Écoute les commandes d'un restaurant en temps réel (Supabase Realtime),
-// avec repli sur polling toutes les 5s si Realtime est indisponible.
+// Écoute les commandes actives d'un restaurant.
+// Polling toutes les 5s en base fiable (fonctionne même si Realtime n'est
+// pas activé côté Supabase pour la table `commandes`), + Realtime en bonus
+// pour une mise à jour quasi instantanée quand disponible.
 export function useCommandes(restaurantId: string | null) {
   const [commandes, setCommandes] = useState<CommandeAvecLignes[]>([])
-  const [realtimeOk, setRealtimeOk] = useState(true)
   const supabase = createClient()
 
   const fetchCommandes = useCallback(async () => {
@@ -38,6 +39,10 @@ export function useCommandes(restaurantId: string | null) {
     if (!restaurantId) return
     fetchCommandes()
 
+    // Polling de base — garantit la mise à jour même sans Realtime
+    const interval = setInterval(fetchCommandes, 5000)
+
+    // Realtime en complément, pour accélérer la mise à jour quand actif
     const channel = supabase
       .channel(`commandes-${restaurantId}`)
       .on(
@@ -45,21 +50,23 @@ export function useCommandes(restaurantId: string | null) {
         { event: '*', schema: 'public', table: 'commandes', filter: `restaurant_id=eq.${restaurantId}` },
         () => fetchCommandes()
       )
-      .subscribe((status) => {
-        setRealtimeOk(status === 'SUBSCRIBED')
-      })
+      .subscribe()
 
     return () => {
+      clearInterval(interval)
       supabase.removeChannel(channel)
     }
   }, [restaurantId, fetchCommandes, supabase])
 
-  // Fallback polling si Realtime indisponible
-  useEffect(() => {
-    if (realtimeOk || !restaurantId) return
-    const interval = setInterval(fetchCommandes, 5000)
-    return () => clearInterval(interval)
-  }, [realtimeOk, restaurantId, fetchCommandes])
+  // Retire immédiatement une commande de la liste locale (ex: après paiement)
+  const retirerLocalement = useCallback((id: string) => {
+    setCommandes((prev) => prev.filter((c) => c.id !== id))
+  }, [])
 
-  return { commandes, refetch: fetchCommandes }
+  // Met à jour immédiatement le statut d'une commande en local (retour visuel instantané)
+  const mettreAJourStatutLocal = useCallback((id: string, statut: CommandeAvecLignes['statut']) => {
+    setCommandes((prev) => prev.map((c) => (c.id === id ? { ...c, statut } : c)))
+  }, [])
+
+  return { commandes, refetch: fetchCommandes, retirerLocalement, mettreAJourStatutLocal }
 }

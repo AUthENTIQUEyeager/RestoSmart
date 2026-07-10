@@ -2,8 +2,8 @@
 
 import { Pencil, Trash2 } from 'lucide-react'
 import { Toggle } from '@/components/ui/Toggle'
+import { ImagePlat } from '@/components/ui/ImagePlat'
 import { fmt } from '@/lib/utils/format'
-import { imagePlat } from '@/lib/utils/slug'
 
 export interface Plat {
   id: string
@@ -29,11 +29,7 @@ export function PlatCard({
 }) {
   return (
     <div className="flex items-center gap-4 rounded-lg border border-border bg-white p-4">
-      <img
-        src={imagePlat(plat.image_url, plat.categorie)}
-        alt={plat.nom}
-        className="h-16 w-16 rounded object-cover"
-      />
+      <ImagePlat nom={plat.nom} imageUrl={plat.image_url} className="h-16 w-16 rounded" />
       <div className="flex-1">
         <p className="font-medium">{plat.nom}</p>
         <p className="text-sm text-textmid">{fmt(plat.prix)} · {plat.categorie}</p>

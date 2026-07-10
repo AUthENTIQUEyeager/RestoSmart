@@ -175,3 +175,24 @@ CREATE POLICY "paiements_manager" ON paiements FOR ALL
 -- (nécessaire pour que le menu client anonyme fonctionne)
 -- ══════════════════════════════════════════════
 CREATE POLICY "restaurants_public" ON restaurants FOR SELECT USING (true);
+
+-- ══════════════════════════════════════════════
+-- CORRECTIF : Storage — bucket "plats" + policies
+-- (sans ça, l'upload échoue silencieusement : RLS bloque
+-- storage.objects par défaut tant qu'aucune policy n'existe)
+-- ══════════════════════════════════════════════
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('plats', 'plats', true)
+ON CONFLICT (id) DO NOTHING;
+
+CREATE POLICY "plats_images_lecture_publique" ON storage.objects
+  FOR SELECT USING (bucket_id = 'plats');
+
+CREATE POLICY "plats_images_ecriture_authentifie" ON storage.objects
+  FOR INSERT WITH CHECK (bucket_id = 'plats' AND auth.role() = 'authenticated');
+
+CREATE POLICY "plats_images_modification_authentifie" ON storage.objects
+  FOR UPDATE USING (bucket_id = 'plats' AND auth.role() = 'authenticated');
+
+CREATE POLICY "plats_images_suppression_authentifie" ON storage.objects
+  FOR DELETE USING (bucket_id = 'plats' AND auth.role() = 'authenticated');

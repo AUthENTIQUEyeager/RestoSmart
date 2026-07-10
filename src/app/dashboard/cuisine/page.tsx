@@ -7,7 +7,7 @@ import { CommandeCard } from '@/components/cuisine/CommandeCard'
 
 export default function CuisinePage() {
   const [restaurantId, setRestaurantId] = useState<string | null>(null)
-  const { commandes, refetch } = useCommandes(restaurantId)
+  const { commandes, refetch, mettreAJourStatutLocal } = useCommandes(restaurantId)
   const compteurPrecedent = useRef(0)
 
   useEffect(() => {
@@ -50,11 +50,19 @@ export default function CuisinePage() {
   }
 
   async function changerStatut(id: string, statut: 'en_preparation' | 'pret') {
-    await fetch('/api/dashboard/commandes', {
+    // Retour visuel instantané, avant même la réponse serveur
+    mettreAJourStatutLocal(id, statut)
+
+    const res = await fetch('/api/dashboard/commandes', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, statut }),
     })
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      alert(data.error ?? 'Erreur lors de la mise à jour de la commande')
+    }
     refetch()
   }
 

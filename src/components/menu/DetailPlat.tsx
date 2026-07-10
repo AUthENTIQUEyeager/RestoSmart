@@ -1,6 +1,6 @@
 'use client'
 
-import { imagePlat } from '@/lib/utils/slug'
+import { ImagePlat } from '@/components/ui/ImagePlat'
 import { fmt } from '@/lib/utils/format'
 import { X, Minus, Plus, Clock } from 'lucide-react'
 import type { PlatMenu } from './PlatCard'
@@ -22,7 +22,7 @@ export function DetailPlat({
     <div className="fixed inset-0 z-50 flex items-end bg-black/40">
       <div className="max-h-[85vh] w-full overflow-y-auto rounded-t-2xl bg-white">
         <div className="relative">
-          <img src={imagePlat(plat.image_url, plat.categorie)} alt={plat.nom} className="h-[220px] w-full object-cover" />
+          <ImagePlat nom={plat.nom} imageUrl={plat.image_url} className="h-[220px] w-full" />
           <button
             onClick={onClose}
             className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white shadow"

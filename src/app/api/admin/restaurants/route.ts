@@ -4,17 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { generateSlug, slugUnique } from '@/lib/utils/slug'
 
-const PLATS_DEMO = [
-  { nom: 'Riz sauce arachide', prix: 1500, categorie: 'Plats locaux', temps_prep: 10 },
-  { nom: 'Tô mil sauce gombo', prix: 1000, categorie: 'Plats locaux', temps_prep: 10 },
-  { nom: 'Poulet braisé', prix: 3000, categorie: 'Grillades', temps_prep: 20 },
-  { nom: 'Brochettes bœuf', prix: 1500, categorie: 'Grillades', temps_prep: 15 },
-  { nom: 'Jus de bissap', prix: 500, categorie: 'Boissons', temps_prep: 2 },
-  { nom: 'Jus de gingembre', prix: 500, categorie: 'Boissons', temps_prep: 2 },
-  { nom: 'Beignets sucrés', prix: 500, categorie: 'Desserts', temps_prep: 5 },
-  { nom: 'Salade de fruits', prix: 800, categorie: 'Desserts', temps_prep: 5 },
-]
-
 const schema = z.object({
   nom: z.string().min(2),
   adresse: z.string().optional(),
@@ -122,7 +111,7 @@ export async function POST(req: NextRequest) {
       await admin.from('patron_restaurants').insert({ patron_id: patronId, restaurant_id: restaurant.id })
     }
 
-    // 7. Créer 5 tables + plats de démo
+    // 7. Créer 5 tables par défaut (aucun plat de démo — le manager ajoute ses propres plats)
     const tables = Array.from({ length: 5 }, (_, i) => ({
       restaurant_id: restaurant.id,
       numero: i + 1,
@@ -130,9 +119,6 @@ export async function POST(req: NextRequest) {
       capacite: 4,
     }))
     await admin.from('tables_resto').insert(tables)
-
-    const plats = PLATS_DEMO.map((p) => ({ ...p, restaurant_id: restaurant.id }))
-    await admin.from('plats').insert(plats)
 
     // 8. Succès
     return NextResponse.json({ restaurant })

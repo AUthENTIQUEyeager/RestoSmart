@@ -1,6 +1,6 @@
 'use client'
 
-import { imagePlat } from '@/lib/utils/slug'
+import { ImagePlat } from '@/components/ui/ImagePlat'
 import { fmt } from '@/lib/utils/format'
 import { Plus } from 'lucide-react'
 
@@ -27,11 +27,7 @@ export function PlatCard({ plat, onClick }: { plat: PlatMenu; onClick: () => voi
         <p className="mt-1 font-semibold text-brand">{fmt(plat.prix)}</p>
       </div>
       <div className="relative shrink-0">
-        <img
-          src={imagePlat(plat.image_url, plat.categorie)}
-          alt={plat.nom}
-          className="h-[110px] w-[110px] rounded-lg object-cover"
-        />
+        <ImagePlat nom={plat.nom} imageUrl={plat.image_url} className="h-[110px] w-[110px] rounded-lg" />
         <span className="absolute -bottom-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full bg-brand text-white shadow">
           <Plus size={16} />
         </span>

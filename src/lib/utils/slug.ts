@@ -19,17 +19,7 @@ export function slugUnique(base: string, existants: string[]): string {
   return `${base}-${i}`
 }
 
-// Images Unsplash par défaut selon la catégorie
-const IMAGES_CATEGORIE: Record<string, string> = {
-  'Plats locaux': 'photo-1567364816519',
-  Grillades: 'photo-1555939594-58d7cb561ad1',
-  Boissons: 'photo-1544145945-f90425340c7e',
-  Desserts: 'photo-1563729784474-d77dbb933a9e',
-}
-const IMAGE_DEFAULT = 'photo-1504674900247-0877df9cc836'
-
-export function imagePlat(imageUrl: string, categorie: string): string {
-  if (imageUrl) return imageUrl
-  const id = IMAGES_CATEGORIE[categorie] ?? IMAGE_DEFAULT
-  return `https://images.unsplash.com/${id}?w=400&q=80`
+// Initiale d'un plat pour le placeholder visuel quand aucune photo n'est disponible
+export function initialePlat(nom: string): string {
+  return nom.trim().charAt(0).toUpperCase() || '?'
 }

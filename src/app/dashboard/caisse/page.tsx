@@ -9,8 +9,9 @@ import clsx from 'clsx'
 
 export default function CaissePage() {
   const [restaurantId, setRestaurantId] = useState<string | null>(null)
-  const { commandes, refetch } = useCommandes(restaurantId)
+  const { commandes, refetch, retirerLocalement } = useCommandes(restaurantId)
   const [selectionId, setSelectionId] = useState<string | null>(null)
+  const [validationEnCours, setValidationEnCours] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -35,13 +36,27 @@ export default function CaissePage() {
   const selection = commandesTriees.find((c) => c.id === selectionId) ?? commandesTriees[0] ?? null
 
   async function valider(methode: string) {
-    if (!selection) return
-    await fetch('/api/dashboard/commandes', {
+    if (!selection || validationEnCours) return
+    setValidationEnCours(true)
+    const idAPayer = selection.id
+
+    // Retrait immédiat de la liste — une commande payée ne doit plus être cliquable,
+    // elle part directement dans l'historique.
+    retirerLocalement(idAPayer)
+    setSelectionId(null)
+
+    const res = await fetch('/api/dashboard/commandes', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: selection.id, statut: 'paye', methode_paiement: methode }),
+      body: JSON.stringify({ id: idAPayer, statut: 'paye', methode_paiement: methode }),
     })
-    setSelectionId(null)
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      alert(data.error ?? 'Erreur lors de la validation du paiement')
+    }
+
+    setValidationEnCours(false)
     refetch()
   }
 
@@ -77,7 +92,7 @@ export default function CaissePage() {
 
       <div className="flex-1 bg-bg">
         {selection ? (
-          <PanneauPaiement commande={selection} onPaye={valider} />
+          <PanneauPaiement commande={selection} onPaye={valider} disabled={validationEnCours} />
         ) : (
           <div className="flex h-full items-center justify-center text-textlight">
             Sélectionnez une commande

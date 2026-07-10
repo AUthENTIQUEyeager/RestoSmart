@@ -16,9 +16,11 @@ const MODES_PAIEMENT = [
 export function PanneauPaiement({
   commande,
   onPaye,
+  disabled = false,
 }: {
   commande: CommandeAvecLignes
   onPaye: (methode: string) => void
+  disabled?: boolean
 }) {
   const [methode, setMethode] = useState('especes')
 
@@ -86,7 +88,9 @@ export function PanneauPaiement({
       </div>
 
       <div className="mt-auto flex flex-col gap-2">
-        <Button size="lg" variant="success" onClick={() => onPaye(methode)}>Valider le paiement</Button>
+        <Button size="lg" variant="success" onClick={() => onPaye(methode)} disabled={disabled}>
+          {disabled ? 'Validation...' : 'Valider le paiement'}
+        </Button>
         <Button size="lg" variant="secondary" onClick={imprimer}><Printer size={16} /> Imprimer reçu</Button>
       </div>
     </div>
