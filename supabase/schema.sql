@@ -169,3 +169,9 @@ CREATE POLICY "lignes_select"      ON lignes_commande FOR SELECT USING (true);
 CREATE POLICY "paiements_manager" ON paiements FOR ALL
   USING (commande_id IN (SELECT id FROM commandes WHERE restaurant_id = auth_restaurant_id())
          OR auth_role() = 'super_admin');
+
+-- ══════════════════════════════════════════════
+-- CORRECTIF : lecture publique du restaurant par slug
+-- (nécessaire pour que le menu client anonyme fonctionne)
+-- ══════════════════════════════════════════════
+CREATE POLICY "restaurants_public" ON restaurants FOR SELECT USING (true);
